@@ -1,4 +1,17 @@
-# elm-package generated files
-elm-stuff
-# elm-repl generated files
-repl-temp-*
+build/
+dist/
+entrance.egg-info/
+elm-stuff/
+documentation.json
+node_modules/
+yarn.lock
+debug.log*
+notes.json
+venv/
+prefs.json
+.DS_Store
+.cache/
+run.spec
+package-lock.json
+__pycache__/
+.gcroots/
