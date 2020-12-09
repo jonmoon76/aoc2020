@@ -30,6 +30,9 @@ calculate_ target layers candidates others =
         else
             Nothing
 
+    else if List.sum candidates >= target then
+        Nothing
+
     else
         case others of
             [] ->
@@ -49,7 +52,11 @@ calculate target layers input =
     String.split "\n" input
         |> List.map String.toInt
         |> List.filterMap identity
+        |> Debug.log "Start"
+        |> List.sort
+        |> List.reverse
         |> calculate_ target layers []
+        |> Debug.log "End"
 
 
 init : ( Model, Cmd Msg )
