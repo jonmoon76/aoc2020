@@ -1,14 +1,7 @@
 module Day2 exposing (..)
 
 import Array exposing (Array(..))
-import Browser
-import Html exposing (Html, b, button, div, text)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
-import Http
-import Json.Decode as Decode exposing (Decoder)
 import Parser exposing (..)
-import Parser.Advanced as A exposing ((|.), (|=))
 import RemoteData exposing (RemoteData(..), WebData)
 import Set exposing (Set(..))
 import Types exposing (..)
@@ -131,13 +124,6 @@ calculate checker input =
         |> Debug.log "End"
 
 
-textify : Maybe Int -> Html Msg
-textify result =
-    Maybe.map String.fromInt result
-        |> Maybe.withDefault "-"
-        |> text
-
-
 evaluate : (Policy -> String -> Bool) -> Day2Model -> Maybe Int
 evaluate checker model =
     case model.input of
@@ -148,22 +134,16 @@ evaluate checker model =
             Nothing
 
 
+part1 : Evaluator
+part1 model =
+    evaluate isPasswordOK model.day2
+
+
+part2 : Evaluator
+part2 model =
+    evaluate isPasswordOK2 model.day2
+
+
 init : Day1Model
 init =
     { input = NotAsked }
-
-
-view : Model -> Html Msg
-view model =
-    div [ class "exercise" ]
-        [ text "Day 2"
-        , text " "
-        , button [ onClick loadInput ] [ text "Run" ]
-        , text "Part 1:"
-        , text " "
-        , textify (evaluate isPasswordOK model.day2)
-        , text " "
-        , text "Part 2:"
-        , text " "
-        , textify (evaluate isPasswordOK2 model.day2)
-        ]

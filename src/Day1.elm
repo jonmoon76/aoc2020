@@ -1,12 +1,7 @@
 module Day1 exposing (..)
 
-import Browser
-import Html exposing (Html, b, button, div, text)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
-import Http
-import Json.Decode as Decode exposing (Decoder)
 import RemoteData exposing (RemoteData(..), WebData)
+import Set exposing (Set(..))
 import Types exposing (..)
 
 
@@ -58,39 +53,26 @@ calculate target layers input =
         |> Debug.log "End"
 
 
-textify : Maybe Int -> Html Msg
-textify result =
-    Maybe.map String.fromInt result
-        |> Maybe.withDefault "-"
-        |> text
-
-
 evaluate : Model -> Int -> Int -> Maybe Int
 evaluate model target layers =
     case model.day1.input of
         Success input ->
-            calculate 2020 2 input
+            calculate target layers input
 
         _ ->
             Nothing
 
 
+part1 : Model -> Maybe Int
+part1 model =
+    evaluate model 2020 2
+
+
+part2 : Model -> Maybe Int
+part2 model =
+    evaluate model 2020 3
+
+
 init : Day1Model
 init =
     { input = NotAsked }
-
-
-view : Model -> Html Msg
-view model =
-    div [ class "exercise" ]
-        [ text "Day 1"
-        , text " "
-        , button [ onClick loadInput ] [ text "Run" ]
-        , text "Part 1:"
-        , text " "
-        , textify (evaluate model 2020 2)
-        , text " "
-        , text "Part 2:"
-        , text " "
-        , textify (evaluate model 2020 3)
-        ]

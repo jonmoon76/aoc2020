@@ -25,6 +25,10 @@ type alias ModelUpdater =
     Model -> WebData String -> Model
 
 
+type alias Evaluator =
+    Model -> Maybe Int
+
+
 type Msg
     = InputLoaded ModelUpdater (WebData String)
     | Run String ModelUpdater
