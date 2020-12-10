@@ -4,11 +4,21 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias Model =
-    { day1 : Day1Model }
+    { day1 : Day1Model
+    , day2 : Day2Model
+    }
+
+
+type alias SingleFileModel =
+    { input : WebData String }
 
 
 type alias Day1Model =
-    { input : WebData String }
+    SingleFileModel
+
+
+type alias Day2Model =
+    SingleFileModel
 
 
 type alias ModelUpdater =

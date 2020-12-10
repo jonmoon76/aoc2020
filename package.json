@@ -6,7 +6,7 @@
   "author": "Jon Moon <jmoon@cisco.com>",
   "license": "MIT",
   "dependencies": {
-    "elm-hot": "1.0.1",
+    "elm-hot": "^1.0.1",
     "global": "^4.4.0",
     "parcel-bundler": "^1.12.4"
   },

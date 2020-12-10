@@ -2,6 +2,7 @@ module Day1 exposing (..)
 
 import Browser
 import Html exposing (Html, b, button, div, text)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -11,7 +12,7 @@ import Types exposing (..)
 
 updateModel : Model -> WebData String -> Model
 updateModel model input =
-    { model | day1 = Day1Model input }
+    { model | day1 = SingleFileModel input }
 
 
 loadInput : Msg
@@ -81,7 +82,7 @@ init =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ class "exercise" ]
         [ text "Day 1"
         , text " "
         , button [ onClick loadInput ] [ text "Run" ]

@@ -8,3 +8,5 @@ body, .input-group { margin: 1.4em 0 };
 .error { color: red; font-weight: bold; }
 .stdout { color: green; }
 .stderr { color: brown; }
+
+.exercise { border-style: solid; border-width: thin; border-color: grey; border-radius: 5px; margin: 2px; padding: 2px ; padding-left: 5px }
