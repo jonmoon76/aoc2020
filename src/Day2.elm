@@ -144,6 +144,6 @@ part2 model =
     evaluate isPasswordOK2 model.day2
 
 
-init : Day1Model
+init : Day2Model
 init =
     { input = NotAsked }

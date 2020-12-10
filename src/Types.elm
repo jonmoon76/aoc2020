@@ -6,6 +6,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 type alias Model =
     { day1 : Day1Model
     , day2 : Day2Model
+    , day3 : SingleFileModel
     }
 
 
