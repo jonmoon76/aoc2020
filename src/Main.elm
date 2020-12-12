@@ -1,8 +1,10 @@
 module Main exposing (..)
 
 import Browser
-import Day1 exposing (..)
-import Day2 exposing (..)
+import Day1
+import Day2
+import Day3
+import Day4
 import Html exposing (Html, b, button, div, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -23,7 +25,7 @@ loadInput file updater =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { day1 = Day1.init, day2 = Day2.init }, Cmd.none )
+    ( { day1 = Day1.init, day2 = Day2.init, day3 = Day3.init, day4 = Day4.init }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -60,7 +62,9 @@ viewDay model title loader part1 part2 =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewDay model "Day 2" Day2.loadInput Day2.part1 Day2.part2
+        [ viewDay model "Day 4" Day4.loadInput Day4.part1 Day4.part2
+        , viewDay model "Day 3" Day3.loadInput Day3.part1 Day3.part2
+        , viewDay model "Day 2" Day2.loadInput Day2.part1 Day2.part2
         , viewDay model "Day 1" Day1.loadInput Day1.part1 Day1.part2
         ]
 
