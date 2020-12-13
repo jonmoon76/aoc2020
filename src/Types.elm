@@ -9,7 +9,22 @@ type alias Model =
     , day3 : SingleFileModel
     , day4 : SingleFileModel
     , day5 : SingleFileModel
+    , day6 : DayModel
     }
+
+
+type alias DayModelRecord =
+    { example : Maybe String
+    , updateDayModel : Model -> DayModel -> Model
+    , input : WebData String
+    , inputFile : String
+    , part1 : Maybe String -> Maybe Int
+    , part2 : Maybe String -> Maybe Int
+    }
+
+
+type DayModel
+    = DayModel DayModelRecord
 
 
 type alias SingleFileModel =

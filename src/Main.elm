@@ -6,6 +6,7 @@ import Day2
 import Day3
 import Day4
 import Day5
+import Day6
 import Html exposing (Html, b, button, div, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -31,6 +32,7 @@ init =
       , day3 = Day3.init
       , day4 = Day4.init
       , day5 = Day5.init
+      , day6 = Day6.init
       }
     , Cmd.none
     )
@@ -67,10 +69,45 @@ viewDay model title loader part1 part2 =
         ]
 
 
+viewDay2 : DayModel -> String -> Html Msg
+viewDay2 dayModel title =
+    let
+        record : DayModelRecord
+        record =
+            case dayModel of
+                DayModel d ->
+                    d
+
+        storeInput : Model -> WebData String -> Model
+        storeInput model webDataInput =
+            record.updateDayModel model (DayModel { record | input = webDataInput })
+
+        resultSet : String -> Maybe String -> Html Msg
+        resultSet subtitle input =
+            div []
+                [ text subtitle
+                , text " "
+                , text "Part 1:"
+                , text " "
+                , textify <| record.part1 input
+                , text " "
+                , text "Part 2:"
+                , text " "
+                , textify <| record.part2 input
+                ]
+    in
+    div [ class "exercise" ]
+        [ button [ onClick (Run record.inputFile storeInput) ] [ text title ]
+        , resultSet "Main" (RemoteData.toMaybe record.input)
+        , resultSet "Example" record.example
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div []
-        [ viewDay model "Day 5" Day5.loadInput Day5.part1 Day5.part2
+        [ viewDay2 model.day6 "Day 6"
+        , viewDay model "Day 5" Day5.loadInput Day5.part1 Day5.part2
         , viewDay model "Day 4" Day4.loadInput Day4.part1 Day4.part2
         , viewDay model "Day 3" Day3.loadInput Day3.part1 Day3.part2
         , viewDay model "Day 2" Day2.loadInput Day2.part1 Day2.part2
