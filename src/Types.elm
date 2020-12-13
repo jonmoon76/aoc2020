@@ -8,6 +8,7 @@ type alias Model =
     , day2 : Day2Model
     , day3 : SingleFileModel
     , day4 : SingleFileModel
+    , day5 : SingleFileModel
     }
 
 
