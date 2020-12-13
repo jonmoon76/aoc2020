@@ -8,7 +8,7 @@ type alias Model =
     , day2 : Day2Model
     , day3 : SingleFileModel
     , day4 : SingleFileModel
-    , day5 : SingleFileModel
+    , day5 : DayModel
     , day6 : DayModel
     }
 
@@ -18,8 +18,8 @@ type alias DayModelRecord =
     , updateDayModel : Model -> DayModel -> Model
     , input : WebData String
     , inputFile : String
-    , part1 : Maybe String -> Maybe Int
-    , part2 : Maybe String -> Maybe Int
+    , part1 : String -> Maybe Int
+    , part2 : String -> Maybe Int
     }
 
 

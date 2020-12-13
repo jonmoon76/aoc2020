@@ -10,39 +10,42 @@ import Tuple exposing (..)
 import Types exposing (..)
 
 
-updateModel : Model -> WebData String -> Model
-updateModel model input =
-    { model | day5 = SingleFileModel input }
-
-
-init : SingleFileModel
+init : DayModel
 init =
-    { input = NotAsked }
+    DayModel
+        { example = Nothing
+        , updateDayModel = \model daymodel -> { model | day5 = daymodel }
+        , input = NotAsked
+        , inputFile = "day5_input.txt"
+        , part1 = part1
+        , part2 = part2
+        }
 
 
-loadInput : Msg
-loadInput =
-    Run "day5_input.txt" updateModel
+part1 : String -> Maybe Int
+part1 =
+    loadRecords >> List.map seatID >> List.maximum
 
 
-part1 : Evaluator
-part1 model =
-    evaluate evaluatePart1 model.day5
+part2 : String -> Maybe Int
+part2 =
+    let
+        checkMissing : Int -> ( Maybe Int, Maybe Int ) -> ( Maybe Int, Maybe Int )
+        checkMissing id state =
+            case state of
+                ( Nothing, result ) ->
+                    ( Just id, Nothing )
 
+                ( Just prevID, result ) ->
+                    ( Just id
+                    , if prevID + 1 == id then
+                        result
 
-part2 : Evaluator
-part2 model =
-    evaluate evaluatePart2 model.day5
-
-
-evaluate : (List Record -> Maybe Int) -> SingleFileModel -> Maybe Int
-evaluate evaluator model =
-    case model.input of
-        Success input ->
-            loadRecords input |> evaluator
-
-        _ ->
-            Nothing
+                      else
+                        Just (prevID + 1)
+                    )
+    in
+    loadRecords >> List.map seatID >> List.sort >> List.foldl checkMissing ( Nothing, Nothing ) >> Tuple.second
 
 
 type RowIndicator
@@ -106,7 +109,7 @@ loadRecord input =
 
 seatID : Record -> Int
 seatID record =
-    8 * rowID record.rowIndicators + columnID record.columnIndicators |> Debug.log "seatID"
+    8 * rowID record.rowIndicators + columnID record.columnIndicators
 
 
 rowID : List RowIndicator -> Basics.Int
@@ -150,34 +153,4 @@ componentID f xs =
     in
     List.map f xs
         |> List.foldl component ( List.length xs - 1, 0 )
-        |> Tuple.second
-
-
-evaluatePart1 : List Record -> Maybe Int
-evaluatePart1 records =
-    List.map seatID records
-        |> List.maximum
-
-
-evaluatePart2 : List Record -> Maybe Int
-evaluatePart2 records =
-    let
-        checkMissing : Int -> ( Maybe Int, Maybe Int ) -> ( Maybe Int, Maybe Int )
-        checkMissing id state =
-            case state of
-                ( Nothing, result ) ->
-                    ( Just id, Nothing )
-
-                ( Just prevID, result ) ->
-                    ( Just id
-                    , if prevID + 1 == id then
-                        result
-
-                      else
-                        Just (prevID + 1)
-                    )
-    in
-    List.map seatID records
-        |> List.sort
-        |> List.foldl checkMissing ( Nothing, Nothing )
         |> Tuple.second

@@ -22,7 +22,7 @@ init =
         }
 
 
-part1 : Maybe String -> Maybe Int
+part1 : String -> Maybe Int
 part1 input =
     Nothing
 

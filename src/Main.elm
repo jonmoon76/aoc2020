@@ -89,11 +89,11 @@ viewDay2 dayModel title =
                 , text " "
                 , text "Part 1:"
                 , text " "
-                , textify <| record.part1 input
+                , textify <| Maybe.andThen record.part1 input
                 , text " "
                 , text "Part 2:"
                 , text " "
-                , textify <| record.part2 input
+                , textify <| Maybe.andThen record.part2 input
                 ]
     in
     div [ class "exercise" ]
@@ -107,7 +107,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ viewDay2 model.day6 "Day 6"
-        , viewDay model "Day 5" Day5.loadInput Day5.part1 Day5.part2
+        , viewDay2 model.day5 "Day 5"
         , viewDay model "Day 4" Day4.loadInput Day4.part1 Day4.part2
         , viewDay model "Day 3" Day3.loadInput Day3.part1 Day3.part2
         , viewDay model "Day 2" Day2.loadInput Day2.part1 Day2.part2
