@@ -159,5 +159,25 @@ evaluatePart1 records =
         |> List.maximum
 
 
-evaluatePart2 =
-    evaluatePart1
+evaluatePart2 : List Record -> Maybe Int
+evaluatePart2 records =
+    let
+        checkMissing : Int -> ( Maybe Int, Maybe Int ) -> ( Maybe Int, Maybe Int )
+        checkMissing id state =
+            case state of
+                ( Nothing, result ) ->
+                    ( Just id, Nothing )
+
+                ( Just prevID, result ) ->
+                    ( Just id
+                    , if prevID + 1 == id then
+                        result
+
+                      else
+                        Just (prevID + 1)
+                    )
+    in
+    List.map seatID records
+        |> List.sort
+        |> List.foldl checkMissing ( Nothing, Nothing )
+        |> Tuple.second
