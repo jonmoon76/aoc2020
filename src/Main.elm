@@ -8,6 +8,7 @@ import Day4
 import Day5
 import Day6
 import Day7
+import Day8
 import Html exposing (Html, b, button, div, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -35,6 +36,7 @@ init =
       , day5 = Day5.init
       , day6 = Day6.init
       , day7 = Day7.init
+      , day8 = Day8.init
       }
     , Cmd.none
     )
@@ -108,7 +110,8 @@ viewDay2 dayModel title =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewDay2 model.day7 "Day 7"
+        [ viewDay2 model.day8 "Day 8"
+        , viewDay2 model.day7 "Day 7"
         , viewDay2 model.day6 "Day 6"
         , viewDay2 model.day5 "Day 5"
         , viewDay model "Day 4" Day4.loadInput Day4.part1 Day4.part2
