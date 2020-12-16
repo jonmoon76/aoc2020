@@ -21,7 +21,7 @@ type alias SortedList a =
 init : DayModel
 init =
     DayModel
-        { example = Just example2
+        { example = Just example
         , updateDayModel = \model daymodel -> { model | day10 = daymodel }
         , input = NotAsked
         , inputFile = "day10_input.txt"
@@ -65,11 +65,6 @@ part3 input =
         |> Just
 
 
-partition : List (List Int) -> Dict (List Int) Int
-partition results =
-    List.foldl (\result state -> Dict.insert result ((Dict.get result state |> Maybe.withDefault 0) + 1) state) Dict.empty results
-
-
 loadInput : String -> SortedList Int
 loadInput input =
     String.split "\n" input
@@ -108,32 +103,6 @@ onesProductThrees deltas =
     ns 1 deltas * ns 3 deltas
 
 
-consider : Int -> SortedList Int -> Int
-consider prev remainder =
-    let
-        valid : Int -> Basics.Bool
-        valid candidate =
-            candidate - prev <= 3
-    in
-    case remainder of
-        t :: [] ->
-            if valid t then
-                1
-
-            else
-                0
-
-        x :: xs ->
-            if valid x then
-                consider x xs + consider prev xs
-
-            else
-                0
-
-        _ ->
-            0
-
-
 considerDiffs : List Int -> Int
 considerDiffs diffs =
     let
@@ -159,21 +128,6 @@ considerDiffs diffs =
 
 example : String
 example =
-    """16
-10
-15
-5
-1
-11
-7
-19
-6
-12
-4"""
-
-
-example2 : String
-example2 =
     """28
 33
 18
