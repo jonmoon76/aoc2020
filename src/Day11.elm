@@ -26,16 +26,21 @@ init =
 
 
 part1 : String -> Maybe Int
-part1 input =
-    createMap input
-        |> convergeMap
-        |> countMap Occupied
-        |> Just
+part1 =
+    partHelp 4 checkDirectionImmediate
 
 
 part2 : String -> Maybe Int
-part2 input =
-    Nothing
+part2 =
+    partHelp 5 checkDirectionFar
+
+
+partHelp : Int -> Checker -> String -> Maybe Int
+partHelp occupiedBoundary checker input =
+    createMap input
+        |> convergeMap occupiedBoundary checker
+        |> countMap Occupied
+        |> Just
 
 
 type GridSquare
@@ -54,6 +59,10 @@ type alias Map =
 
 type alias Point =
     ( Int, Int )
+
+
+type alias Checker =
+    Map -> Point -> Point -> Maybe ()
 
 
 getMapSquare : Map -> Point -> Maybe GridSquare
@@ -80,40 +89,44 @@ addPoints x y =
 
 neighborVectors : List Point
 neighborVectors =
-    List.cartesianProduct [ List.range -1 1, List.range -1 1 ]
-        |> List.filterMap
-            (\p ->
-                case p of
-                    [ x, y ] ->
-                        if x == 0 && y == 0 then
-                            Nothing
-
-                        else
-                            Just ( x, y )
-
-                    _ ->
-                        Nothing
-            )
+    [ ( -1, 0 ), ( -1, -1 ), ( 0, -1 ), ( 1, -1 ), ( 1, 0 ), ( 1, 1 ), ( 0, 1 ), ( -1, 1 ) ]
 
 
-countNeighbors : Point -> Map -> Int
-countNeighbors pos map =
+checkDirectionImmediate : Map -> Point -> Point -> Maybe ()
+checkDirectionImmediate map pos delta =
+    case getMapSquare map pos of
+        Just Occupied ->
+            Just ()
+
+        _ ->
+            Nothing
+
+
+checkDirectionFar : Map -> Point -> Point -> Maybe ()
+checkDirectionFar map pos delta =
+    case getMapSquare map pos of
+        Just Occupied ->
+            Just ()
+
+        Just Empty ->
+            Nothing
+
+        Nothing ->
+            Nothing
+
+        _ ->
+            checkDirectionFar map (addPoints pos delta) delta
+
+
+countNeighbors : Checker -> Point -> Map -> Int
+countNeighbors checker pos map =
     neighborVectors
-        |> List.map (addPoints pos)
-        |> List.filterMap (getMapSquare map)
-        |> List.filterMap
-            (\x ->
-                if x == Occupied then
-                    Just ()
-
-                else
-                    Nothing
-            )
+        |> List.filterMap (\d -> checker map (addPoints pos d) d)
         |> List.length
 
 
-updateSquare : Point -> ( Map, Map, Bool ) -> ( Map, Map, Bool )
-updateSquare pos mapState =
+updateSquare : Int -> Checker -> Point -> ( Map, Map, Bool ) -> ( Map, Map, Bool )
+updateSquare occupiedBoundary checker pos mapState =
     let
         newMap =
             case mapState of
@@ -128,14 +141,14 @@ updateSquare pos mapState =
         newGridValue =
             case getMapSquare oldMap pos of
                 Just Empty ->
-                    if countNeighbors pos oldMap == 0 then
+                    if countNeighbors checker pos oldMap == 0 then
                         ( Occupied, True )
 
                     else
                         ( Empty, False )
 
                 Just Occupied ->
-                    if countNeighbors pos oldMap >= 4 then
+                    if countNeighbors checker pos oldMap >= occupiedBoundary then
                         ( Empty, True )
 
                     else
@@ -176,18 +189,18 @@ allCoordinates map =
         |> List.filterMap listToPoint
 
 
-updateMap : Map -> ( Map, Map, Bool )
-updateMap map =
+updateMap : Int -> Checker -> Map -> ( Map, Map, Bool )
+updateMap occupiedBoundary checker map =
     allCoordinates map
-        |> List.foldl updateSquare ( map, map, False )
+        |> List.foldl (updateSquare occupiedBoundary checker) ( map, map, False )
 
 
-convergeMap : Map -> Map
-convergeMap map =
+convergeMap : Int -> Checker -> Map -> Map
+convergeMap occupiedBoundary checker map =
     let
         convergeMapHelp : Int -> Map -> Map
         convergeMapHelp i map_ =
-            case updateMap map_ of
+            case updateMap occupiedBoundary checker map_ of
                 ( _, m, False ) ->
                     m
 
