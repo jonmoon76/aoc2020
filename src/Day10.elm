@@ -56,15 +56,6 @@ splitOnThrees list =
         |> List.map (String.split "\n" >> List.filterMap String.toInt)
 
 
-part3 : String -> Maybe Int
-part3 input =
-    loadInput input
-        |> List.tail
-        |> Maybe.withDefault []
-        |> consider 0
-        |> Just
-
-
 loadInput : String -> SortedList Int
 loadInput input =
     String.split "\n" input
@@ -95,7 +86,6 @@ ns : Int -> List Int -> Int
 ns n l =
     List.filter ((==) n) l
         |> List.length
-        |> Debug.log (String.fromInt n)
 
 
 onesProductThrees : List Int -> Int

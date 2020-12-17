@@ -12,6 +12,7 @@
             "elm/http": "2.0.0",
             "elm/json": "1.1.3",
             "elm/parser": "1.1.0",
+            "elm-community/list-extra": "8.2.4",
             "ensoft/entrance": "1.0.5",
             "etaque/elm-response": "3.1.0",
             "krisajenkins/remotedata": "6.0.1",
