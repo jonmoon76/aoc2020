@@ -3,6 +3,8 @@ module Day12 exposing (..)
 import Array exposing (Array(..))
 import Bootstrap.Form exposing (Col)
 import Dict exposing (..)
+import Html exposing (a)
+import Matrix exposing (Matrix(..))
 import Maybe
 import Parser exposing ((|.), (|=))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -25,16 +27,21 @@ init =
 
 
 part1 : String -> Maybe Int
-part1 input =
-    readDirections input
-        |> runDirections
-        |> manhattanDistance
-        |> Just
+part1 =
+    part Basic ( 1, 0 )
 
 
 part2 : String -> Maybe Int
-part2 input =
-    Nothing
+part2 =
+    part Waypoint ( 10, 1 )
+
+
+part : Mode -> Point -> String -> Maybe Int
+part mode waypoint input =
+    readDirections input
+        |> runDirections mode waypoint
+        |> manhattanDistance
+        |> Just
 
 
 type CompassPoint
@@ -55,6 +62,11 @@ type Instruction
     | Advance
 
 
+type Mode
+    = Basic
+    | Waypoint
+
+
 type alias Direction =
     ( Instruction, Int )
 
@@ -67,21 +79,100 @@ type alias Point =
     ( Int, Int )
 
 
-addPoints : ( number, number ) -> ( number, number ) -> ( number, number )
-addPoints x y =
-    ( Tuple.first x + Tuple.first y, Tuple.second x + Tuple.second y )
+type alias State =
+    { mode : Mode
+    , waypoint : Point
+    , position : Point
+    }
+
+
+rotationMatrix : Int -> Matrix Int
+rotationMatrix angle =
+    let
+        floatAngle =
+            degrees (toFloat angle)
+
+        element c =
+            case c of
+                ( 1, 1 ) ->
+                    cos floatAngle
+
+                ( 1, 2 ) ->
+                    sin floatAngle
+
+                ( 2, 1 ) ->
+                    negate (sin floatAngle)
+
+                ( 2, 2 ) ->
+                    cos floatAngle
+
+                _ ->
+                    0
+    in
+    Matrix.initialize 2 2 element
+        |> Matrix.map round
+
+
+rotatePoint : Int -> Point -> Point
+rotatePoint degrees point =
+    let
+        pointToMatrix =
+            Matrix.fromList 2 1 [ Tuple.first point, Tuple.second point ]
+
+        matrixToPoint matrix =
+            ( Matrix.get 1 1 matrix, Matrix.get 2 1 matrix )
+                |> Tuple.mapBoth (Maybe.withDefault 0) (Maybe.withDefault 0)
+    in
+    pointToMatrix
+        |> Maybe.andThen (Matrix.dot (rotationMatrix degrees))
+        |> Maybe.map matrixToPoint
+        |> Maybe.withDefault ( 0, 0 )
+
+
+adjustAngle : Hand -> Int -> Int
+adjustAngle hand angle =
+    case hand of
+        Left ->
+            negate angle
+
+        Right ->
+            angle
+
 
 manhattanDistance : Point -> Int
 manhattanDistance point =
     abs (Tuple.first point) + abs (Tuple.second point)
 
-type alias State =
-    ( CompassPoint, Point )
+
+mapPoint : Point -> Int -> Point -> Point
+mapPoint delta n pos =
+    ( Tuple.first pos + n * Tuple.first delta, Tuple.second pos + n * Tuple.second delta )
 
 
-runDirections : Directions -> Point
-runDirections directions =
-    runDirectionsHelp directions ( East, ( 0, 0 ) )
+mapPointByCompassPoint : CompassPoint -> Int -> Point -> Point
+mapPointByCompassPoint compassPoint n pos =
+    mapPoint (compassPointToDelta compassPoint) n pos
+
+
+compassPointToDelta : CompassPoint -> Point
+compassPointToDelta compassPoint =
+    case compassPoint of
+        North ->
+            ( 0, 1 )
+
+        East ->
+            ( 1, 0 )
+
+        South ->
+            ( 0, -1 )
+
+        West ->
+            ( -1, 0 )
+
+
+runDirections : Mode -> Point -> Directions -> Point
+runDirections mode waypoint directions =
+    runDirectionsHelp directions (State mode waypoint ( 0, 0 ))
 
 
 runDirectionsHelp : Directions -> State -> Point
@@ -91,113 +182,35 @@ runDirectionsHelp directions state =
             runDirectionsHelp xs (runDirection x state)
 
         _ ->
-            Tuple.second state
+            state.position
 
 
 runDirection : Direction -> State -> State
 runDirection direction state =
     let
-        facing =
-            Tuple.first state
+        mode =
+            state.mode
+
+        waypoint =
+            state.waypoint
 
         position =
-            Tuple.second state
-
-        move_ : Point -> Int -> Point -> Point
-        move_ delta n pos =
-            ( Tuple.first pos + n * Tuple.first delta, Tuple.second pos + n * Tuple.second delta )
-
-        move : CompassPoint -> Int -> Point -> Point
-        move compassPoint n pos =
-            move_ (compassPointToDelta compassPoint) n pos
-
-        compassPointToDelta : CompassPoint -> Point
-        compassPointToDelta compassPoint =
-            case compassPoint of
-                North ->
-                    ( 0, 1 )
-
-                East ->
-                    ( 1, 0 )
-
-                South ->
-                    ( 0, -1 )
-
-                West ->
-                    ( -1, 0 )
-
-        compassPointToInt : CompassPoint -> Int
-        compassPointToInt compassPoint =
-            case compassPoint of
-                North ->
-                    0
-
-                East ->
-                    1
-
-                South ->
-                    2
-
-                West ->
-                    3
-
-        intToCompassPoint : Int -> CompassPoint
-        intToCompassPoint n =
-            case modBy 4 n of
-                0 ->
-                    North
-
-                1 ->
-                    East
-
-                2 ->
-                    South
-
-                _ ->
-                    West
-
-        degreesToInt : Int -> Int
-        degreesToInt degrees =
-            case degrees of
-                90 ->
-                    1
-
-                180 ->
-                    2
-
-                270 ->
-                    3
-
-                _ ->
-                    0
-
-        degreesAndHandToInt : Int -> Hand -> Int
-        degreesAndHandToInt degrees hand =
-            case hand of
-                Left ->
-                    0 - degreesToInt degrees
-
-                Right ->
-                    degreesToInt degrees
-
-        rotate : Hand -> Int -> CompassPoint
-        rotate hand degrees =
-            degreesAndHandToInt degrees hand
-                |> (+) (compassPointToInt facing)
-                |> intToCompassPoint
+            state.position
     in
     case direction of
         ( Advance, n ) ->
-            ( facing, move facing n position )
+            State mode waypoint (mapPoint waypoint n position)
 
-        ( Rotate Left, n ) ->
-            ( rotate Left n, position )
+        ( Rotate hand, angle ) ->
+            State mode (rotatePoint (adjustAngle hand angle) waypoint) position
 
-        ( Rotate Right, n ) ->
-            ( rotate Right n, position )
+        ( Move compassPoint, n ) ->
+            case mode of
+                Basic ->
+                    State mode waypoint (mapPointByCompassPoint compassPoint n position)
 
-        ( Move p, n ) ->
-            ( facing, move p n position )
+                Waypoint ->
+                    State mode (mapPointByCompassPoint compassPoint n waypoint) position
 
 
 readDirections : String -> Directions
