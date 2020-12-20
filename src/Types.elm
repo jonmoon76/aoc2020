@@ -16,6 +16,7 @@ type alias Model =
     , day10 : DayModel
     , day11 : DayModel
     , day12 : DayModel
+    , day13 : DayModel
     }
 
 

@@ -5,6 +5,7 @@ import Day1
 import Day10
 import Day11
 import Day12
+import Day13
 import Day2
 import Day3
 import Day4
@@ -45,6 +46,7 @@ init =
       , day10 = Day10.init
       , day11 = Day11.init
       , day12 = Day12.init
+      , day13 = Day13.init
       }
     , Cmd.none
     )
@@ -118,7 +120,8 @@ viewDay2 dayModel title =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewDay2 model.day12 "Day 12"
+        [ viewDay2 model.day13 "Day 13"
+        , viewDay2 model.day12 "Day 12"
         , viewDay2 model.day11 "Day 11"
         , viewDay2 model.day10 "Day 10"
         , viewDay2 model.day9 "Day 9"
