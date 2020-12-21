@@ -10,27 +10,25 @@ import Test exposing (..)
 import Tuple exposing (..)
 
 
-
-{-
-   bezoutTests =
-       describe "Bezout Identity Tests"
-           [ test "5 23"
-               (\_ -> Expect.equal ( -9, 2 ) (bezoutIdentity 5 23))
-           , test "3 5"
-               (\_ -> Expect.equal ( 2, -1 ) (bezoutIdentity 3 5))
-           ]
-
--}
-{-
-   twoCongruencesTests =
-       describe "Two Congruences Tests"
-           [ test "(1,5), (2,3)"
-               (\_ -> Expect.equal ( 5, 15 ) (solve2Congruences ( 0, 5 ) ( -1, 3 )))
-           ]
-
--}
+bezoutTests : Test
+bezoutTests =
+    describe "Bezout Identity Tests"
+        [ test "5 23"
+            (\_ -> Expect.equal ( -9, 2 ) (bezoutIdentity 5 23))
+        , test "3 5"
+            (\_ -> Expect.equal ( 2, -1 ) (bezoutIdentity 3 5))
+        ]
 
 
+twoCongruencesTests : Test
+twoCongruencesTests =
+    describe "Two Congruences Tests"
+        [ test "(1,5), (2,3)"
+            (\_ -> Expect.equal ( 5, 15 ) (solve2Congruences ( 0, 5 ) ( -1, 3 )))
+        ]
+
+
+part2Tests : Test
 part2Tests =
     let
         cases =
@@ -76,6 +74,7 @@ isCorrect cs =
         cs
 
 
+part2Tests2 : Test
 part2Tests2 =
     let
         input =
@@ -92,78 +91,4 @@ part2Tests2 =
         (List.map
             (\x -> test (Debug.toString x) (\_ -> Expect.true "Invalid" (isCorrect x)))
             cases
-        )
-
-
-primes =
-    [ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 ]
-
-
-testPrimes =
-    List.indexedMap Tuple.pair primes
-
-
-seedPrimes =
-    -- Primes (Dict.fromList (List.indexedMap Tuple.pair primes)) 0
-    emptyPrimes
-
-
-nth n =
-    case nthPrime seedPrimes n of
-        ( p, _ ) ->
-            p
-
-
-factors n =
-    case factorise seedPrimes n of
-        ( [ a ], _ ) ->
-            a
-
-        _ ->
-            1
-
-
-
-{-
-   factoriseTests =
-       describe "factorise"
-           [ test "3" (\_ -> Expect.equal 3 (factors 3))
-           , test "5" (\_ -> Expect.equal 5 (factors 5))
-           ]
-
--}
-
-
-moduloProductTests =
-    describe
-        "moduloProduct"
-        [ test "1 * 3 == 1 mod 2" (\_ -> Expect.equal 2 (moduloProduct 7 [ 2, 3, 5 ]))
-        ]
-
-
-nthPrimeTests =
-    describe "nthPrime"
-        (List.map
-            (\( n, p ) -> test (Debug.toString ( n, p )) (\_ -> Expect.equal p (nth n)))
-            testPrimes
-        )
-
-
-isPrimeTests =
-    let
-        checkPrime n =
-            case isPrime seedPrimes n of
-                ( result, _ ) ->
-                    result
-    in
-    describe "isPrime"
-        (List.map
-            (\n -> test (Debug.toString n) (\_ -> Expect.true "Wrong" (checkPrime n == (Set.member n <| Set.fromList primes))))
-            (List.range
-                1
-             <|
-                (List.maximum primes
-                    |> Maybe.withDefault 1
-                )
-            )
         )
