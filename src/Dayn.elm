@@ -10,6 +10,7 @@ import Result
 import Set exposing (Set(..))
 import Tuple exposing (..)
 import Types exposing (..)
+import Utils exposing (..)
 
 
 init : DayModel

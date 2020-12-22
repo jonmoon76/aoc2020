@@ -107,8 +107,8 @@ bezoutIdentity n1 n2 =
     ( s, t )
 
 
-solve2Congruences : Congruence -> Congruence -> Congruence
-solve2Congruences c1 c2 =
+solve2CongruencesConstructive : Congruence -> Congruence -> Congruence
+solve2CongruencesConstructive c1 c2 =
     let
         ( a1, n1 ) =
             c1
@@ -128,6 +128,31 @@ solve2Congruences c1 c2 =
     ( a3, n3 )
 
 
+solve2CongruencesBrute : Congruence -> Congruence -> Congruence
+solve2CongruencesBrute c1 c2 =
+    let
+        ( a1, n1 ) =
+            c1
+
+        ( a2, n2 ) =
+            c2
+
+        check candidate =
+            if modBy n2 (candidate - a2) == 0 then
+                candidate
+
+            else
+                check (candidate + n1)
+
+        a3 =
+            modBy n3 (check a1)
+
+        n3 =
+            n1 * n2
+    in
+    ( a3, n3 )
+
+
 solveNCongruences : List Congruence -> Int
 solveNCongruences list =
     case list of
@@ -138,7 +163,7 @@ solveNCongruences list =
             0
 
         c1 :: c2 :: cs ->
-            solveNCongruences (solve2Congruences c1 c2 :: cs)
+            solveNCongruences (solve2CongruencesBrute c1 c2 :: cs)
 
 
 loadInput : String -> ( String, String )

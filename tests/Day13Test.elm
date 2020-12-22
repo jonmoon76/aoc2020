@@ -24,7 +24,7 @@ twoCongruencesTests : Test
 twoCongruencesTests =
     describe "Two Congruences Tests"
         [ test "(1,5), (2,3)"
-            (\_ -> Expect.equal ( 5, 15 ) (solve2Congruences ( 0, 5 ) ( -1, 3 )))
+            (\_ -> Expect.equal ( 5, 15 ) (solve2CongruencesConstrctive ( 0, 5 ) ( -1, 3 )))
         ]
 
 
@@ -43,8 +43,7 @@ part2Tests =
     describe "Part Two"
         (List.map
             (\( x, y ) -> test x (\_ -> Expect.equal (Just y) (part2 x)))
-            [ ( "\n5,3", 5 )
-            ]
+            cases
         )
 
 
