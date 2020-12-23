@@ -52,7 +52,7 @@ type MaskField
 
 
 type alias Mask =
-    { onesMask : Int, zeroesMask : Int }
+    List MaskField
 
 
 type Instruction
@@ -111,59 +111,40 @@ logValue str a =
     Debug.log str (Debug.toString a) |> always a
 
 
-myBitwise : (Bool -> Bool -> Bool) -> Int -> Int -> Int
-myBitwise op a b =
+myBitwise : (a -> Bool -> Bool) -> List a -> Int -> Int
+myBitwise op opArg value =
     let
-        normalise x y =
-            let
-                decomposed_x =
-                    decompose x
+        decomposed_value =
+            decompose value
 
-                decomposed_y =
-                    decompose y
-            in
-            List.map (\_ -> False) (List.range (List.length decomposed_y + 1) (List.length decomposed_x)) ++ decomposed_y
-
-        decomposed_a =
-            normalise b a
-
-        decomposed_b =
-            normalise a b
+        normalised_value : List Bool
+        normalised_value =
+            List.map (\_ -> False) (List.range (List.length decomposed_value + 1) (List.length opArg)) ++ decomposed_value
     in
-    ()
-        -- ( logValue "a" decomposed_a, logValue "b" decomposed_b )
-        |> always (List.map2 op decomposed_a decomposed_b |> recomposeTrace)
+    List.map2 op opArg normalised_value |> recompose
+
+
+applyMask : Mask -> Int -> Int
+applyMask mask value =
+    let
+        op : MaskField -> Bool -> Bool
+        op maskField bit =
+            case maskField of
+                One ->
+                    True
+
+                Zero ->
+                    False
+
+                Unspecified ->
+                    bit
+    in
+    myBitwise op mask value
 
 
 runProgram : Program -> Int
 runProgram program =
     let
-        setValue : Mask -> Int -> Int
-        setValue mask inputValue =
-            inputValue
-                |> myBitwise
-                    (\x y ->
-                        if x then
-                            True
-
-                        else
-                            y
-                    )
-                    mask.onesMask
-                |> myBitwise
-                    (\x y ->
-                        if x then
-                            False
-
-                        else
-                            y
-                    )
-                    mask.zeroesMask
-
-        setValueTrace : Int -> Mask -> Int -> Int
-        setValueTrace address mask inputValue =
-            trace ("set[" ++ String.fromInt address ++ "]") ( mask, inputValue ) (\_ -> setValue mask inputValue)
-
         runInstruction : Instruction -> State -> State
         runInstruction instruction state =
             case instruction of
@@ -171,13 +152,13 @@ runProgram program =
                     { state | mask = mask }
 
                 SetMem address value ->
-                    { state | memory = Dict.insert address (setValueTrace address state.mask value) state.memory }
+                    { state | memory = Dict.insert address (applyMask state.mask value) state.memory }
 
         evaluateMemory : State -> Int
         evaluateMemory state =
             List.sum <| Dict.values state.memory
     in
-    List.foldl runInstruction { mask = Mask 0 0, memory = Dict.empty } program
+    List.foldl runInstruction { mask = [], memory = Dict.empty } program
         |> evaluateMemory
 
 
@@ -230,37 +211,9 @@ readMask maskString =
                 _ ->
                     Unspecified
 
-        checkValue expressionStr value =
-            (if value < 0 then
-                Debug.log "!!!" expressionStr
-
-             else
-                ""
-            )
-                |> always value
-
-        checkOr : Int -> Int -> Int
-        checkOr a b =
-            (+) a b |> (\x -> checkValue (String.fromInt a ++ " | " ++ String.fromInt b ++ " == " ++ String.fromInt x) x)
-
-        updateMask : Char -> Int -> Mask -> Mask
-        updateMask c bitValue mask =
-            case readField c of
-                One ->
-                    { mask | onesMask = checkOr mask.onesMask bitValue }
-
-                Zero ->
-                    { mask | zeroesMask = checkOr mask.zeroesMask bitValue }
-
-                _ ->
-                    mask
-
-        processField : Char -> ( Int, Mask ) -> ( Int, Mask )
-        processField c state =
-            case state of
-                ( exponent, mask ) ->
-                    ( exponent + 1, updateMask c (2 ^ exponent) mask )
+        processField : Char -> Mask -> Mask
+        processField c mask =
+            readField c :: mask
     in
     String.toList maskString
-        |> List.foldr processField ( 0, Mask 0 0 )
-        |> Tuple.second
+        |> List.foldr processField []
