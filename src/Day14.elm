@@ -17,7 +17,7 @@ import Utils exposing (..)
 init : DayModel
 init =
     DayModel
-        { example = Just example
+        { example = Just example2
         , updateDayModel = \model daymodel -> { model | day14 = daymodel }
         , input = NotAsked
         , inputFile = "day14_input.txt"
@@ -27,14 +27,18 @@ init =
 
 
 part1 : String -> Maybe Int
-part1 input =
-    readProgram input
-        |> (runProgram >> Just)
+part1 =
+    partN Version1
 
 
 part2 : String -> Maybe Int
-part2 input =
-    Nothing
+part2 =
+    partN Version2
+
+
+partN : Version -> String -> Maybe Int
+partN version =
+    readProgram >> runProgram version >> Just
 
 
 example : String
@@ -45,6 +49,19 @@ mem[7] = 101
 mem[8] = 0"""
 
 
+example2 : String
+example2 =
+    """mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1"""
+
+
+type Version
+    = Version1
+    | Version2
+
+
 type MaskField
     = One
     | Zero
@@ -53,6 +70,10 @@ type MaskField
 
 type alias Mask =
     List MaskField
+
+
+type alias Memory =
+    Dict Int Int
 
 
 type Instruction
@@ -84,7 +105,7 @@ decompose n =
             else
                 decomposeHelp (floor (toFloat m / 2)) (getBit m :: values)
     in
-    trace "decompose" n (\_ -> decomposeHelp n [])
+    decomposeHelp n []
 
 
 recompose : List Bool -> Int
@@ -111,7 +132,7 @@ logValue str a =
     Debug.log str (Debug.toString a) |> always a
 
 
-myBitwise : (a -> Bool -> Bool) -> List a -> Int -> Int
+myBitwise : (a -> Bool -> b) -> List a -> Int -> List b
 myBitwise op opArg value =
     let
         decomposed_value =
@@ -121,11 +142,11 @@ myBitwise op opArg value =
         normalised_value =
             List.map (\_ -> False) (List.range (List.length decomposed_value + 1) (List.length opArg)) ++ decomposed_value
     in
-    List.map2 op opArg normalised_value |> recompose
+    List.map2 op opArg normalised_value
 
 
-applyMask : Mask -> Int -> Int
-applyMask mask value =
+applyMaskPart1 : Mask -> Int -> Int
+applyMaskPart1 mask value =
     let
         op : MaskField -> Bool -> Bool
         op maskField bit =
@@ -139,12 +160,78 @@ applyMask mask value =
                 Unspecified ->
                     bit
     in
-    myBitwise op mask value
+    myBitwise op mask value |> recompose
 
 
-runProgram : Program -> Int
-runProgram program =
+applyMaskPart2 : Mask -> Int -> Mask
+applyMaskPart2 mask address =
     let
+        op : MaskField -> Bool -> MaskField
+        op maskField bit =
+            case maskField of
+                One ->
+                    One
+
+                Zero ->
+                    case bit of
+                        True ->
+                            One
+
+                        False ->
+                            Zero
+
+                Unspecified ->
+                    Unspecified
+    in
+    myBitwise op mask address
+
+
+expandMask : Mask -> List (List Bool)
+expandMask mask =
+    let
+        expandMaskHelp : List Bool -> Mask -> List (List Bool)
+        expandMaskHelp prefix remainingMask =
+            case remainingMask of
+                [] ->
+                    [ prefix ]
+
+                maskField :: newRemainingMask ->
+                    case maskField of
+                        Zero ->
+                            expandMaskHelp (False :: prefix) newRemainingMask
+
+                        One ->
+                            expandMaskHelp (True :: prefix) newRemainingMask
+
+                        Unspecified ->
+                            expandMaskHelp (False :: prefix) newRemainingMask
+                                ++ expandMaskHelp (True :: prefix) newRemainingMask
+    in
+    expandMaskHelp [] mask
+        |> List.map List.reverse
+
+
+runProgram : Version -> Program -> Int
+runProgram version program =
+    let
+        setMemVersion1 : Int -> Int -> State -> State
+        setMemVersion1 address value state =
+            { state | memory = Dict.insert address (applyMaskPart1 state.mask value) state.memory }
+
+        expandAddresses : Mask -> Int -> List Int
+        expandAddresses mask address =
+            applyMaskPart2 mask address
+                |> expandMask
+                |> List.map recompose
+
+        updateMemory : Int -> Mask -> Int -> Memory -> Memory
+        updateMemory value mask address oldMemory =
+            List.foldl (\a memory -> Dict.insert a value memory) oldMemory <| expandAddresses mask address
+
+        setMemVersion2 : Int -> Int -> State -> State
+        setMemVersion2 address value state =
+            { state | memory = updateMemory value state.mask address state.memory }
+
         runInstruction : Instruction -> State -> State
         runInstruction instruction state =
             case instruction of
@@ -152,7 +239,12 @@ runProgram program =
                     { state | mask = mask }
 
                 SetMem address value ->
-                    { state | memory = Dict.insert address (applyMask state.mask value) state.memory }
+                    case version of
+                        Version1 ->
+                            setMemVersion1 address value state
+
+                        Version2 ->
+                            setMemVersion2 address value state
 
         evaluateMemory : State -> Int
         evaluateMemory state =
