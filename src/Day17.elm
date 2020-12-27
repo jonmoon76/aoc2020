@@ -27,7 +27,7 @@ init =
 
 
 type alias Coordinates =
-    ( Int, Int, Int )
+    List Int
 
 
 part1 : String -> Maybe Int
@@ -51,8 +51,8 @@ example =
 
 
 addPoints : Coordinates -> Coordinates -> Coordinates
-addPoints ( x1, y1, z1 ) ( x2, y2, z2 ) =
-    ( x1 + x2, y1 + y2, z1 + z2 )
+addPoints p1 p2 =
+    List.map2 (+) p1 p2
 
 
 getPointNeighbors : Coordinates -> Set Coordinates
@@ -84,11 +84,11 @@ neighborDeltas =
                         (\y ->
                             options
                                 |> List.andThen
-                                    (\z -> [ ( x, y, z ) ])
+                                    (\z -> [ [ x, y, z ] ])
                         )
             )
         |> Set.fromList
-        |> Set.remove ( 0, 0, 0 )
+        |> Set.remove [ 0, 0, 0 ]
 
 
 cycleN : Int -> Set Coordinates -> Set Coordinates
@@ -141,7 +141,7 @@ readInput input =
                 |> List.map2
                     (\x c ->
                         if c == '#' then
-                            Just ( x, y, z )
+                            Just [ x, y, z ]
 
                         else
                             Nothing
