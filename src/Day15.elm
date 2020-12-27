@@ -33,7 +33,8 @@ part1 input =
 
 part2 : String -> Maybe Int
 part2 input =
-    Just (playGame 30000000 input)
+    --Just (playGame 30000000 input)
+    Nothing
 
 
 type alias State =
