@@ -31,16 +31,22 @@ type alias Coordinates =
 
 
 part1 : String -> Maybe Int
-part1 input =
-    readInput input
-        |> cycleN 6
-        |> Set.size
-        |> Just
+part1 =
+    part 3
 
 
 part2 : String -> Maybe Int
-part2 input =
-    Nothing
+part2 =
+    -- Should be 4 - but running very slow.
+    part 2
+
+
+part : Int -> String -> Maybe Int
+part dimensions input =
+    readInput dimensions input
+        |> cycleN dimensions 6
+        |> Set.size
+        |> Just
 
 
 example : String
@@ -55,55 +61,84 @@ addPoints p1 p2 =
     List.map2 (+) p1 p2
 
 
-getPointNeighbors : Coordinates -> Set Coordinates
-getPointNeighbors point =
-    Set.map (addPoints point) neighborDeltas
+getPointNeighbors : Int -> Coordinates -> Set Coordinates
+getPointNeighbors dimensions point =
+    Set.map (addPoints point) <| neighborDeltas dimensions
 
 
-getAllNeighbors : Set Coordinates -> Set Coordinates
-getAllNeighbors input =
+getAllNeighbors : Int -> Set Coordinates -> Set Coordinates
+getAllNeighbors dimensions input =
     let
         considerPoint : Coordinates -> Set Coordinates -> Set Coordinates
         considerPoint point acc =
-            Set.union acc <| getPointNeighbors point
+            Set.union acc <| getPointNeighbors dimensions point
     in
     Set.foldl considerPoint input input
 
 
-neighborDeltas : Set Coordinates
-neighborDeltas =
+neighborDeltasHelp : Int -> Set Coordinates
+neighborDeltasHelp dimensions =
     let
         options =
             [ -1, 0, 1 ]
+
+        addDimensionToPoint : Coordinates -> List Coordinates
+        addDimensionToPoint point =
+            List.map (\c -> c :: point) options
+
+        addDimension : List Coordinates -> List Coordinates
+        addDimension base =
+            List.concatMap addDimensionToPoint base
     in
-    options
-        |> List.andThen
-            (\x ->
-                options
-                    |> List.andThen
-                        (\y ->
-                            options
-                                |> List.andThen
-                                    (\z -> [ [ x, y, z ] ])
-                        )
-            )
+    List.foldl (\_ acc -> addDimension acc) [ [] ] (List.range 1 dimensions)
         |> Set.fromList
-        |> Set.remove [ 0, 0, 0 ]
+        |> Set.remove (List.repeat dimensions 0)
 
 
-cycleN : Int -> Set Coordinates -> Set Coordinates
-cycleN n input =
-    List.foldl (\_ state -> cycle state) input <| List.range 1 n
+neighborDeltas2 : Set Coordinates
+neighborDeltas2 =
+    neighborDeltasHelp 2
 
 
-cycle : Set Coordinates -> Set Coordinates
-cycle input =
+neighborDeltas3 : Set Coordinates
+neighborDeltas3 =
+    neighborDeltasHelp 3
+
+
+neighborDeltas4 : Set Coordinates
+neighborDeltas4 =
+    neighborDeltasHelp 4
+
+
+neighborDeltas : Int -> Set Coordinates
+neighborDeltas dimensions =
+    case dimensions of
+        2 ->
+            neighborDeltas2
+
+        3 ->
+            neighborDeltas3
+
+        4 ->
+            neighborDeltas4
+
+        n ->
+            neighborDeltasHelp n
+
+
+cycleN : Int -> Int -> Set Coordinates -> Set Coordinates
+cycleN dimensions n input =
+    List.foldl (\_ state -> cycle dimensions state) input <| List.range 1 n
+
+
+cycle : Int -> Set Coordinates -> Set Coordinates
+cycle dimensions input =
     let
         isActive : Coordinates -> Bool
         isActive point =
             let
                 activeNeighbors =
-                    getPointNeighbors point
+                    getPointNeighbors dimensions point
                         |> Set.intersect input
                         |> Set.size
             in
@@ -113,7 +148,7 @@ cycle input =
             else
                 activeNeighbors == 3
     in
-    getAllNeighbors input
+    getAllNeighbors dimensions input
         |> Set.filter isActive
 
 
@@ -121,11 +156,11 @@ cycle input =
 -- Input Parsing
 
 
-readInput : String -> Set Coordinates
-readInput input =
+readInput : Int -> String -> Set Coordinates
+readInput dimensions input =
     let
-        z =
-            0
+        extra =
+            List.repeat (dimensions - 2) 0
 
         indices : List a -> List Int
         indices l =
@@ -141,7 +176,7 @@ readInput input =
                 |> List.map2
                     (\x c ->
                         if c == '#' then
-                            Just [ x, y, z ]
+                            Just <| [ x, y ] ++ extra
 
                         else
                             Nothing

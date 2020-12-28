@@ -46,31 +46,27 @@ part2 input =
         notes =
             readNotes input
     in
-    trace "part2"
-        0
-        (\_ ->
-            List.filter (validTicket notes.fields) notes.nearbyTickets
-                |> List.transpose
-                |> List.map (candidateFields notes.fields)
-                |> solve
-                |> List.map2
-                    (\value mField ->
-                        case mField of
-                            Just field ->
-                                if String.startsWith "departure" field then
-                                    Just value
+    List.filter (validTicket notes.fields) notes.nearbyTickets
+        |> List.transpose
+        |> List.map (candidateFields notes.fields)
+        |> solve
+        |> List.map2
+            (\value mField ->
+                case mField of
+                    Just field ->
+                        if String.startsWith "departure" field then
+                            Just value
 
-                                else
-                                    Nothing
+                        else
+                            Nothing
 
-                            Nothing ->
-                                Nothing
-                    )
-                    notes.myTicket
-                |> List.filterMap identity
-                |> List.product
-                |> Just
-        )
+                    Nothing ->
+                        Nothing
+            )
+            notes.myTicket
+        |> List.filterMap identity
+        |> List.product
+        |> Just
 
 
 candidateFields : List Field -> List Int -> List String
@@ -137,27 +133,19 @@ solve startState =
 
         iterate : ( List Candidates, Tent ) -> List Candidates
         iterate ( currentState, tent ) =
-            trace "iterate"
-                ( currentState, tent )
-                (\_ ->
-                    case tent of
-                        t :: ts ->
-                            iterate <| removeFromTent t ts currentState
+            case tent of
+                t :: ts ->
+                    iterate <| removeFromTent t ts currentState
 
-                        _ ->
-                            currentState
-                )
+                _ ->
+                    currentState
 
         extract : List Candidates -> List (Maybe String)
         extract finalState =
             List.map extractSolved finalState
     in
-    trace "solve"
-        startState
-        (\_ ->
-            iterate ( startState, initialTent )
-                |> extract
-        )
+    iterate ( startState, initialTent )
+        |> extract
 
 
 example : String
@@ -236,11 +224,7 @@ invalidValuesInTicket fields ticket =
 
 invalidValuesInTickets : List Field -> List Ticket -> List Int
 invalidValuesInTickets fields tickets =
-    trace "invalidValuesInTickets"
-        ( fields, tickets )
-        (\_ ->
-            List.concatMap (invalidValuesInTicket fields) tickets
-        )
+    List.concatMap (invalidValuesInTicket fields) tickets
 
 
 validTicket : List Field -> Ticket -> Bool

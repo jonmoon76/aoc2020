@@ -10,7 +10,15 @@ import Day14
 import Day15
 import Day16
 import Day17
+import Day18
+import Day19
 import Day2
+import Day20
+import Day21
+import Day22
+import Day23
+import Day24
+import Day25
 import Day3
 import Day4
 import Day5
@@ -55,6 +63,14 @@ init =
       , day15 = Day15.init
       , day16 = Day16.init
       , day17 = Day17.init
+      , day18 = Day18.init
+      , day19 = Day19.init
+      , day20 = Day20.init
+      , day21 = Day21.init
+      , day22 = Day22.init
+      , day23 = Day23.init
+      , day24 = Day24.init
+      , day25 = Day25.init
       }
     , Cmd.none
     )
@@ -128,7 +144,8 @@ viewDay2 dayModel title =
 view : Model -> Html Msg
 view model =
     div []
-        [ viewDay2 model.day17 "Day 17"
+        [ viewDay2 model.day19 "Day 19"
+        , viewDay2 model.day17 "Day 17"
         , viewDay2 model.day16 "Day 16"
         , viewDay2 model.day15 "Day 15"
         , viewDay2 model.day14 "Day 14"
